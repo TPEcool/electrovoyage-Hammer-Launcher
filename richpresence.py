@@ -1,12 +1,4 @@
 from os import path
-
-'''system('rmdir /s /q hammerlauncher')
-print('Setting up virtual environment...')
-venv.main(['hammerlauncher'])
-
-print('Setting up virtual environment...')
-system('hammerlauncher\Scripts\\activate && pip install pygetwindow --yes && pip install pypresence --yes')'''
-
 import pygetwindow as gw
 from pypresence import Presence, DiscordNotFound
 import time
@@ -32,7 +24,7 @@ try:
 except DiscordNotFound:
     print('Discord not found, failed to start Rich Presence')
 
-FOUND, IDLE, MISSING = (0, 1, 2)
+FOUND, IDLE, MISSING, SEARCHING = range(4)
 
 while True:
     hammer_state = None
@@ -40,14 +32,16 @@ while True:
     windows_list = gw.getAllWindows()
 
     # Extract names of all windows
-    window_names = [window.title for window in windows_list]
+    window_names: list[str] = [window.title for window in windows_list]
 
     # Print the list of window names
     #print('Searching for Hammer...')
+    hammer_state = SEARCHING
     for name in window_names:
+        
 
         #print('Hammer - ' in name) 
-        if 'Hammer - [' in name:
+        if name.startswith('Hammer - ['):
             hammer_state = FOUND
 
             if old_hammername != hammer_name:
@@ -55,15 +49,17 @@ while True:
 
             old_hammername = hammer_name
             hammer_name = name
+            #print('Hammer: map is open')
         elif name == 'Hammer':
             hammer_state = IDLE
-        else:
-            hammer_state = MISSING
+            #print('Hammer found')
+    if hammer_state == SEARCHING:
+        hammer_state = MISSING
 
     # Extract the 'path to file' part
-    if hammer_state is FOUND:
-        path_to_file = path.basename(hammer_name.split('-')[1].strip().split('-')[0].strip()[1:-1])
-
+    if hammer_state == FOUND:
+        path_to_file = path.basename(hammer_name.split('-')[1].strip().split('-')[0].strip()[1:])
+        
         try:
             rpc.update(
                 details='Editing a map',
@@ -75,6 +71,7 @@ while True:
         except DiscordNotFound:
             print('Discord not found, failed to start Rich Presence')
         except NameError:
+            print('nameerror')
             pass
     elif hammer_state is IDLE:
         try:

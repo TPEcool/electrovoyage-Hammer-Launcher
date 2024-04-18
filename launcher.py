@@ -14,5 +14,5 @@ def getcwd() -> str:
 #venv.main(['hammerlauncher', '--system-site-packages'])
 
 print('Launching Rich Presence...')
-print(listdir(getcwd()), listdir(getcwd() + '/launcher'))
+#print(listdir(getcwd()), listdir(getcwd() + '/launcher'))
 system(join(getcwd(), 'launcher', f'startenv.bat "{getcwd()}" "{_getcwd()}"'))

@@ -1,5 +1,3 @@
-rem @echo off
+@echo off
 echo Activating...
-"%~2\hammerlauncher\Scripts\activate.ps1"
-echo Activated
-start "%~1\launcher\hammerlauncher.exe"
+call "%~2\hammerlauncher\Scripts\Activate.bat" && start "%~1\launcher\hammerlauncher.exe"
