@@ -13,6 +13,9 @@ Slice a split string from `start` to `end - 1`.
     '''
     return delimiter.join(s.split(delimiter)[start:end])
 
+def getViewportIndependentWindowName(name: str) -> str:
+    return sliceSplit(name, '-', 0, -1)
+
 print('Setting up rich presence:')
 try:
     rpc = Presence('1216087154581573803', pipe=0)
@@ -31,27 +34,10 @@ except DiscordNotFound:
     print('Discord not found, failed to start Rich Presence')
 
 FOUND, IDLE, MISSING, SEARCHING = range(4)
+starttimes = {}
 
-import re
-
-'''def detect_changes(old_str, new_str):
-    pattern = r'Hammer - \[(Textured|Top|Front|Right|Wireframe|Polygon|Textured Shaded|Lightmap grid|Smoothing Group)\]'
-    keyword_match = re.search(pattern, old_str)
-    if keyword_match:
-        keyword = keyword_match.group()
-        old_content = re.search(r'\[.*?\]', old_str).group()
-        new_content = re.search(r'\[.*?\]', new_str).group()
-        if old_content == new_content:
-            return "No changes detected"
-        else:
-            return new_content[1:-1]  # Return the content within the square brackets'''
-
-# Example usage
-'''old_string = "Hammer - [Textured] Some other changes"
-new_string = "Hammer - [Textured] Some different changes"
-changes = detect_changes(old_string, new_string)
-print(changes)'''
-
+def GetHammerFilename(win_name: str) -> str:
+    return path.basename(win_name.split('-')[1].strip().split('-')[0].strip()[1:])
 
 while True:
     hammer_state = None
@@ -65,14 +51,12 @@ while True:
     #print('Searching for Hammer...')
     hammer_state = SEARCHING
     for name in window_names:
-        
-
         #print('Hammer - ' in name) 
         if name.startswith('Hammer - ['):
             hammer_state = FOUND
 
-            if old_hammername != hammer_name:
-                starttime = time.time()
+            if (getViewportIndependentWindowName(old_hammername) != getViewportIndependentWindowName(name)) and (getViewportIndependentWindowName(name) not in starttimes.keys()):
+                starttimes[getViewportIndependentWindowName(name)] = time.time()
 
             old_hammername = hammer_name
             hammer_name = name
@@ -85,13 +69,13 @@ while True:
 
     # Extract the 'path to file' part
     if hammer_state == FOUND:
-        path_to_file = path.basename(hammer_name.split('-')[1].strip().split('-')[0].strip()[1:])
+        path_to_file = GetHammerFilename(hammer_name)
         
         try:
             rpc.update(
                 details='Editing a map',
                 state=f'Editing {path_to_file}',
-                start = starttime,
+                start = starttimes[getViewportIndependentWindowName(hammer_name)],
                 large_image='hammerlauncher',
                 large_text='electrovoyage\'s Hammer Launcher'
             )
