@@ -15,4 +15,5 @@ def getcwd() -> str:
 
 print('Launching Rich Presence...')
 #print(listdir(getcwd()), listdir(getcwd() + '/launcher'))
-system(join(getcwd(), 'launcher', f'startenv.bat "{getcwd()}" "{_getcwd()}"'))
+#system(join(getcwd(), 'launcher', f'startenv.bat "{getcwd()}" "{_getcwd()}"'))
+system(f'call "{_getcwd()}\hammerlauncher\Scripts\Activate.bat" && "{getcwd()}\launcher\\richpresence.exe"')

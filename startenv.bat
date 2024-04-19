@@ -1,3 +1,3 @@
 @echo off
 echo Activating...
-call "%~2\hammerlauncher\Scripts\Activate.bat" && start "%~1\launcher\hammerlauncher.exe"
+call "%~2\hammerlauncher\Scripts\Activate.bat" && start "%~1\launcher\richpresence.exe"

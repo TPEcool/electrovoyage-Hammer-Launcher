@@ -26,6 +26,27 @@ except DiscordNotFound:
 
 FOUND, IDLE, MISSING, SEARCHING = range(4)
 
+import re
+
+'''def detect_changes(old_str, new_str):
+    pattern = r'Hammer - \[(Textured|Top|Front|Right|Wireframe|Polygon|Textured Shaded|Lightmap grid|Smoothing Group)\]'
+    keyword_match = re.search(pattern, old_str)
+    if keyword_match:
+        keyword = keyword_match.group()
+        old_content = re.search(r'\[.*?\]', old_str).group()
+        new_content = re.search(r'\[.*?\]', new_str).group()
+        if old_content == new_content:
+            return "No changes detected"
+        else:
+            return new_content[1:-1]  # Return the content within the square brackets'''
+
+# Example usage
+'''old_string = "Hammer - [Textured] Some other changes"
+new_string = "Hammer - [Textured] Some different changes"
+changes = detect_changes(old_string, new_string)
+print(changes)'''
+
+
 while True:
     hammer_state = None
     # Get a list of all windows
@@ -84,32 +105,3 @@ while True:
             )
         except DiscordNotFound:
             print('Discord not found, failed to start Rich Presence')
-
-'''
-discord_APPID = '1132691764755578910'
-
-def setPresence(filename:str | None):
-    try:
-        startTime.set(int(time.time()))
-        rpc = Presence(discord_APPID, pipe = 0)
-        rpc.connect()
-        rpc.update(
-            state = 'In Game',
-            details = 'File: '+('none' if filename is None else '\''+os.path.basename(filename)+'\''),
-            start = startTime.get(),
-            large_image = 'beemmx_r',
-            large_text = 'beeMMX R is a tool which generates music packages for BEE2. Learn more by clicking the GitHub button.',
-            buttons = [
-            {
-                'url':'https://github.com/TPEcool/beeMMX-R',
-                'label': 'beeMMX R on GitHub'
-            },
-            {
-                'url':'https://discord.gg/gb7cp6asJF',
-                'label':'Discord server'
-            }
-        ]
-    )
-    except DiscordNotFound:
-        print('[RPC] Discord not found: unable to refresh rich presence!')
-'''
