@@ -1,7 +1,8 @@
 import venv
 import os
 
-print('Creating virtual environment...')
+if 'hammerlauncher' not in os.listdir():
+    print('Creating virtual environment...')
 venv.main(['hammerlauncher', '--system-site-packages'])
 
 print('Starting...')
