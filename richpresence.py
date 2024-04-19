@@ -7,6 +7,12 @@ old_hammername = ''
 hammer_name = ''
 starttime = time.time()
 
+def sliceSplit(s: str, delimiter: str, start: int, end: int) -> str:
+    '''
+Slice a split string from `start` to `end - 1`.
+    '''
+    return delimiter.join(s.split(delimiter)[start:end])
+
 print('Setting up rich presence:')
 try:
     rpc = Presence('1216087154581573803', pipe=0)
