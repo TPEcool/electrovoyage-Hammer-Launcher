@@ -1,0 +1,1 @@
+An improved SDK launcher for Valve's Hammer World Editor with Discord Rich Presence support for regular Hammer.
