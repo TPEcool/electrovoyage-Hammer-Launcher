@@ -22,4 +22,10 @@ win = Window('electrovoyage\'s Hammer Launcher', 'litera', os.path.join(getcwd()
 presencethread = threading.Thread(target=presence)
 presencethread.start()
 
+def onWindowClosed():
+    stoppresence()
+    win.destroy()
+    
+win.wm_protocol('WM_DELETE_WINDOW', onWindowClosed)
+
 win.mainloop()
