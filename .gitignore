@@ -9,3 +9,4 @@ launcher.spec
 richpresence.spec
 RP main
 RP startup program
+__pycache__
