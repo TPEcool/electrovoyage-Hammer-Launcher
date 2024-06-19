@@ -6,6 +6,9 @@ import time
 global shouldend
 shouldend = False
 
+APPNAME = 'Hammer World Editor'
+APPDESC = 'Via electrovoyage\'s Hammer Launcher'
+
 def main():
     global shouldend
     old_hammername = ''
@@ -32,7 +35,7 @@ def main():
             state='electrovoyage\'s Hammer Launcher is open',
             start = time.time(),
             large_image='hammerlauncher',
-            large_text='electrovoyage\'s Hammer Launcher'
+            large_text=APPNAME
         )
         print('\t3/3 - Rich Presence set')
     except DiscordNotFound:
@@ -80,11 +83,11 @@ def main():
 
             try:
                 rpc.update(
-                    details='Editing a map',
+                    details=context,
                     state=f'Editing {path_to_file}',
                     start = starttimes[getViewportIndependentWindowName(hammer_name)],
                     large_image='hammerlauncher',
-                    large_text='electrovoyage\'s Hammer Launcher'
+                    large_text=APPNAME
                 )
             except DiscordNotFound:
                 print('Discord not found, failed to start Rich Presence')
@@ -98,11 +101,21 @@ def main():
                     state='electrovoyage\'s Hammer Launcher is open',
                     start = starttime,
                     large_image='hammerlauncher',
-                    large_text='electrovoyage\'s Hammer Launcher'
+                    large_text=APPNAME
                 )
             except DiscordNotFound:
                 print('Discord not found, failed to start Rich Presence')
-              
+
+global context              
+context = None
+def setcontext(s: str):
+    '''
+    Set new Rich Presence context.
+    Used for specifying which game Hammer is being used for.
+    '''
+    global context
+    context = s
+
 def stop():
     global shouldend
     shouldend = True
