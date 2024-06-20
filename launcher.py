@@ -16,28 +16,32 @@ import subprocess
 from shlex import split as splitcommand
 import electrovoyage_asset_unpacker
 
-PYINSTALLER = False
+PYINSTALLER = getattr(sys, 'frozen', False)
 
-try:
-    '''import pyi_splash as spl # type: ignore
-    spl.update_text('electrovoyage\'s Hammer Launcher')
-    spl.close()
-    
-    del spl'''
-    PYINSTALLER = True
-except ImportError:
-    pass
+if PYINSTALLER:
+    try:
+        import pyi_splash as spl # type: ignore
+        spl.update_text('electrovoyage\'s Hammer Launcher')
+        spl.close()
 
-VERSION = '0.1'
+        del spl
+    except:
+        pass
 
 # required to use files written into the executable
 def getcwd() -> str:
     return os.path.dirname(__file__)
 
+# Workaround for shortcuts / "open with" and working directory
+if PYINSTALLER:
+    APP_DIRECTORY = os.path.dirname(sys.executable)
+else:
+    APP_DIRECTORY = getcwd()
+
+VERSION = '0.3'
 assetpack = electrovoyage_asset_unpacker.AssetPack(os.path.join(getcwd(), 'resources', 'assets.packed'))
 
-with assetpack.exportToTempfile('resources/logo.png') as f:
-    win = Window('electrovoyage\'s Hammer Launcher', 'darkly', f.name, (450, 600), minsize=(450, 300), hdpi=False)
+win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()
 presencethread = threading.Thread(target=presence)
 presencethread.start()
@@ -77,12 +81,6 @@ applist.pack(expand=True, fill=BOTH)
 
 statusstr = Label(win, text=f'Version {VERSION}', style=INVERSE + DARK)
 statusstr.pack(side=BOTTOM, anchor=S, fill=X)
-
-# Workaround for shortcuts / "open with" and working directory
-if PYINSTALLER:
-    APP_DIRECTORY = os.path.dirname(sys.executable)
-else:
-    APP_DIRECTORY = getcwd()
     
 global launcherpath, sdkdata
 sdkdata = launcherpath = None
@@ -178,6 +176,7 @@ else:
     while True:
         dir = askdirectory(mustexist=True, title='Locate your bin folder')
         if not dir:
+            stoppresence()
             sys.exit()
         elif 'SDKLauncher' not in os.listdir(dir):
             showerror('Invalid bin folder', 'Could not find SDKLauncher in specified folder. Please specify the correct bin folder.')
