@@ -17,7 +17,7 @@ PYINSTALLER = False
 
 try:
     import pyi_splash as spl # type: ignore
-    spl.update_text('Hold on a second, VMText is loading...')
+    spl.update_text('electrovoyage\'s Hammer Launcher')
     spl.close()
     
     del spl
