@@ -14,15 +14,16 @@ import medialist_transform
 import webbrowser
 import subprocess
 from shlex import split as splitcommand
+import electrovoyage_asset_unpacker
 
 PYINSTALLER = False
 
 try:
-    import pyi_splash as spl # type: ignore
+    '''import pyi_splash as spl # type: ignore
     spl.update_text('electrovoyage\'s Hammer Launcher')
     spl.close()
     
-    del spl
+    del spl'''
     PYINSTALLER = True
 except ImportError:
     pass
@@ -33,7 +34,10 @@ VERSION = '0.1'
 def getcwd() -> str:
     return os.path.dirname(__file__)
 
-win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd(), 'resources/logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
+assetpack = electrovoyage_asset_unpacker.AssetPack(os.path.join(getcwd(), 'resources', 'assets.packed'))
+
+with assetpack.exportToTempfile('resources/logo.png') as f:
+    win = Window('electrovoyage\'s Hammer Launcher', 'darkly', f.name, (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()
 presencethread = threading.Thread(target=presence)
 presencethread.start()
@@ -47,7 +51,7 @@ def onWindowClosed():
     
 trebuchet_bold = Font(family='Trebuchet MS', size=16, weight='bold')
     
-pil_logo = Image.open(os.path.join(getcwd(), 'resources', 'logo.png'))
+pil_logo = Image.open(assetpack.getfile('resources/logo.png'))
 
 global logo, large_logo
 logo = ImageTk.PhotoImage(pil_logo.resize((48, 48), Image.BILINEAR))
