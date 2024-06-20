@@ -31,7 +31,7 @@ VERSION = '0.1'
 def getcwd() -> str:
     return os.path.dirname(__file__)
 
-win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd(), 'resources/logo.png'), (500, 400), minsize=(400, 300), hdpi=False)
+win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd(), 'resources/logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()
 presencethread = threading.Thread(target=presence)
 presencethread.start()
@@ -60,12 +60,14 @@ welcome_frame.columnconfigure(1, weight=0)
 
 #applist.pack(expand=True, fill=BOTH)
 
-app_pane = PanedWindow(win, orient=HORIZONTAL)
-app_pane.pack(expand=True, fill=BOTH, anchor=N)
+appframe = Frame(win)
+appframe.pack(expand=True, fill=BOTH)
 
-applist = ScrolledFrame(win, padding=10)
+applist = ScrolledFrame(appframe, padding=10, width=400)
+applist.pack(expand=True, fill=BOTH)
 
-app_prev_frame = Frame(win, padding=10)
+statusstr = Label(win, text=f'Version {VERSION}', style=INVERSE + DARK)
+statusstr.pack(side=BOTTOM, anchor=S, fill=X)
 
 # Workaround for shortcuts / "open with" and working directory
 if PYINSTALLER:
@@ -111,19 +113,21 @@ class ApplicationList:
         
     def _makeframe(self, app: App, groupname: str):
         frame = Frame(self.groups[groupname], padding=5)
-        Label(frame, text=app.name, justify=LEFT, font=('Inter', 12)).grid(row=0, column=0)
-        Label(frame, image=app.smallicontk).grid(column=1, row=0, sticky=E, padx=5)
+        namelabel = Label(frame, text=app.name, justify=LEFT, font=('Inter', 12))
+        namelabel.grid(row=0, column=0)
+        imagelabel = Label(frame, image=app.smallicontk)
+        imagelabel.grid(column=1, row=0, sticky=E, padx=5)
         
         frame.columnconfigure(0, weight=0)
         frame.columnconfigure(1, weight=1)
-        
-        frame.bind('<Button-1>', lambda _: selectApp(app, frame))
-        frame.bind('<ButtonRelease-1>', lambda _: releaseAppButton(frame))
+
+        for widget in (frame, namelabel, imagelabel):
+            widget.bind('<Button-1>', lambda _: selectApp(app, frame))
+            widget.bind('<ButtonRelease-1>', lambda _: releaseAppButton(frame))
         frame.pack(side=TOP, expand=True, fill=X)
         
 def selectApp(app: App, frame: Frame):
     frame.configure(relief=SUNKEN)
-    app_prev_image.configure(text=app.name, image=app.icontk)
     
 def releaseAppButton(frame: Frame):
     frame.configure(relief=FLAT)
@@ -161,7 +165,6 @@ sdkpath = sdkdata['sdkpath']
 medialist: dict[str, dict[str, dict[str, str]]] = sdkdata['medialist']
 for group, programs in medialist.items():
     for _, program in programs.items():
-        print(program)
         img = invertAlpha(Image.open(os.path.join(sdkdata['sdkpath'], 'vgui', program['Image'] + '.tga')))
         app_list_manager.addApp(program['Title'], img, group)
 
@@ -181,11 +184,6 @@ class _Command:
             _command = shellexecute
         
         self.command = _Command(_command, shell)'''
-app_prev_image = Label(app_prev_frame, image = large_logo, text=f'Launcher v{VERSION}', compound=TOP, justify=CENTER, font = ('Inter', 16))
-app_prev_image.pack(side=TOP, expand=True, anchor=N, pady=10)
-
-app_pane.add(applist.container, weight=0)
-app_pane.add(app_prev_frame, weight=1)
     
 win.wm_protocol('WM_DELETE_WINDOW', onWindowClosed)
 
