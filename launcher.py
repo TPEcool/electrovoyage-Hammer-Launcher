@@ -12,6 +12,8 @@ import sys
 import json
 import medialist_transform
 import webbrowser
+import subprocess
+from shlex import split as splitcommand
 
 PYINSTALLER = False
 
@@ -35,6 +37,9 @@ win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd()
 win.withdraw()
 presencethread = threading.Thread(target=presence)
 presencethread.start()
+
+def RightclickMenu(widget: tk.Widget, menu: Menu):
+    widget.bind('<Button-3>', lambda x: menu.tk_popup(x.x_root, x.y_root))
 
 def onWindowClosed():
     stoppresence()
@@ -85,13 +90,32 @@ def invertAlpha(_im: Image.Image) -> Image.Image:
     im.putalpha(alpha)
     return im
 
+ProgramType = str | None
+
 class App:
-    def __init__(self, name: str, icon: Image.Image):
+    def __init__(self, name: str, icon: Image.Image, Program: ProgramType = None, ShellExecute: ProgramType = None):
+        if not (Program or ShellExecute):
+            raise ValueError(f'invalid application {name}: no ShellExecute or Program defined')
+        
+        if Program:
+            self.program = Program
+            self.shellexecute = False
+        else:
+            self.program = ShellExecute
+            self.shellexecute = True
+        
         self.name = name
-        self.icon = icon.resize((100, 100), Image.BICUBIC)
-        self.smallicon = icon.resize((32, 32), Image.BICUBIC)
-        self.icontk = ImageTk.PhotoImage(self.icon)
+        self.smallicon = icon.resize((32, 32), Image.NEAREST)
         self.smallicontk = ImageTk.PhotoImage(self.smallicon)
+    def runcommand(self):
+        if self.shellexecute:
+            webbrowser.open(self.program)
+        else:
+            original_directory = os.getcwd()
+            os.chdir(sdkdata['binpath'])
+            subprocess.Popen(splitcommand(self.program), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            #os.system(self.program)
+            os.chdir(original_directory)
         
 class ApplicationList:
     def __init__(self, base: ScrolledFrame):
@@ -100,8 +124,8 @@ class ApplicationList:
         self.app_frames: list[Frame] = []
         self.groups: dict[str, Frame] = {}
         
-    def addApp(self, name: str, icon: Image.Image, groupname: str):
-        newapp = App(name, icon)
+    def addApp(self, name: str, icon: Image.Image, groupname: str, program: ProgramType = None, shellexecute: ProgramType = None):
+        newapp = App(name, icon, program, shellexecute)
         self.apps.append(newapp)
         self._makeGroupIfNecessary(groupname)
         self._makeframe(newapp, groupname)
@@ -125,9 +149,14 @@ class ApplicationList:
             widget.bind('<Button-1>', lambda _: selectApp(app, frame))
             widget.bind('<ButtonRelease-1>', lambda _: releaseAppButton(frame))
         frame.pack(side=TOP, expand=True, fill=X)
+    def run_app(self, app: App):
+        #print(app.shellexecute, app.program)
+        app.runcommand()
         
 def selectApp(app: App, frame: Frame):
     frame.configure(relief=SUNKEN)
+    win.update()
+    app_list_manager.run_app(app)
     
 def releaseAppButton(frame: Frame):
     frame.configure(relief=FLAT)
@@ -166,7 +195,9 @@ medialist: dict[str, dict[str, dict[str, str]]] = sdkdata['medialist']
 for group, programs in medialist.items():
     for _, program in programs.items():
         img = invertAlpha(Image.open(os.path.join(sdkdata['sdkpath'], 'vgui', program['Image'] + '.tga')))
-        app_list_manager.addApp(program['Title'], img, group)
+        program.setdefault('Program', None)
+        program.setdefault('ShellExecute', None)
+        app_list_manager.addApp(program['Title'], img, group, program['Program'], program['ShellExecute'])
 
 class _Command:
     def __init__(self, command: str, shellexecute: bool):
