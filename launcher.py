@@ -43,6 +43,7 @@ assetpack = electrovoyage_asset_unpacker.AssetPack(os.path.join(getcwd(), 'resou
 
 win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()
+showwarning('Hammer launcher beta', 'This is a beta version of electrovoyage\'s Hammer Launcher. If another program shows up in your Discord profile instead of the Hammer launcher or if you encounter any other sort of issue, please report them to:\n\nelectrovoyagesoftware@gmail.com, or\n\nhttps://github.com/TPEcool/electrovoyage-Hammer-Launcher/issues')
 presencethread = threading.Thread(target=presence)
 presencethread.start()
 
@@ -222,4 +223,5 @@ class _Command:
 win.wm_protocol('WM_DELETE_WINDOW', onWindowClosed)
 
 win.deiconify()
+win.focus()
 win.mainloop()

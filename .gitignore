@@ -12,3 +12,4 @@ RP startup program
 __pycache__
 sdk.json
 packer.exe
+assets.packed
