@@ -14,7 +14,7 @@ import medialist_transform
 import webbrowser
 import subprocess
 from shlex import split as splitcommand
-import electrovoyage_asset_unpacker
+from electrovoyage_asset_unpacker import AssetPack
 
 PYINSTALLER = getattr(sys, 'frozen', False)
 
@@ -39,7 +39,7 @@ else:
     APP_DIRECTORY = getcwd()
 
 VERSION = '0.3'
-assetpack = electrovoyage_asset_unpacker.AssetPack(os.path.join(getcwd(), 'resources', 'assets.packed'))
+assetpack = AssetPack(os.path.join(getcwd(), 'resources', 'assets.packed'))
 
 win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()

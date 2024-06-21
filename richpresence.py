@@ -1,7 +1,7 @@
 from os import path
-import pygetwindow as gw
 from pypresence import Presence, DiscordNotFound
 import time
+from sys import platform
 
 global shouldend
 shouldend = False
@@ -10,6 +10,11 @@ APPNAME = 'Hammer World Editor'
 APPDESC = 'Via electrovoyage\'s Hammer Launcher'
 
 def main():
+    if 'linux' in platform:
+        print('Linux does not support pygetwindow, Rich Presence will be disabled')
+        return
+    else:
+        import pygetwindow as gw
     global shouldend
     old_hammername = ''
     hammer_name = ''
