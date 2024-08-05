@@ -2,6 +2,9 @@ import os
 import webbrowser
 
 def transformMediaList(medialist: dict) -> dict:
+    '''
+    Convert MediaList.txt contents to sdk.json contents.
+    '''
     media = medialist['media']
     images: dict[str, dict] = media['images']
     image_directory = {}
@@ -31,3 +34,35 @@ def transformMediaList(medialist: dict) -> dict:
             newdict[group][program]['Title'] = j['title']
             
     return newdict
+
+LATEST_SDK_VERSION = "2"
+
+def upgradeMediaList(medialist: dict) -> dict:
+    '''
+    Convert a sdk.json file to the latest version.
+    '''
+    medialist.setdefault('version', '1')
+    version = medialist['version']
+    if version == LATEST_SDK_VERSION:
+        return medialist
+    elif float(version) > float(LATEST_SDK_VERSION):
+        raise ValueError('sdk.json version is too new. To regenerate file, please delete it and restart program.')
+        return
+    else:
+        match version:
+            case "1":
+                newmedialist: dict[str, list[dict[str, str]]] = {}
+                for categoryname, categoryapps in medialist['medialist'].items():
+                    print(categoryname, categoryapps)
+                    newmedialist[categoryname] = []
+                    
+                    for _, programdata in categoryapps.items():
+                        programdata['invert_image'] = True
+                        newmedialist[categoryname].append(programdata)
+                        
+                return {
+                    'binpath': medialist['binpath'],
+                    'sdkpath': medialist['sdkpath'],
+                    'version': LATEST_SDK_VERSION,
+                    'medialist': newmedialist,
+                }
