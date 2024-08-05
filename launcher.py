@@ -164,7 +164,7 @@ class App:
         return f'<application name={self.name}>'
     
     def makemenu(self) -> Menu:
-        menu = Menu(self.frame)
+        menu = Menu(win)
         menu.add_command(label='Run', command=self.runcommand)
         menu.add_separator()
         #menu.add_command(label='Move to testgroup', command=lambda: app_list_manager.move_app(self, 'Assets'))
