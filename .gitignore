@@ -13,3 +13,5 @@ __pycache__
 sdk.json
 packer.exe
 assets.packed
+resources/assets.packed
+packer

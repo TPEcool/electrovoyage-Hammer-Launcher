@@ -166,9 +166,11 @@ class App:
     def makemenu(self) -> Menu:
         menu = Menu(win)
         menu.add_command(label='Run', command=self.runcommand)
+        menu.add_separator()
         #menu.add_command(label='Move to testgroup', command=lambda: app_list_manager.move_app(self, 'Assets'))
         menu.add_command(label='Move up', command=lambda: app_list_manager.swap_above(self))
         menu.add_command(label='Move down', command=lambda: app_list_manager.swap_below(self))
+        menu.add_separator()
         menu.add_checkbutton(label='Invert image', onvalue=True, offvalue=False, variable=self._invert_var, command=self.saveimageinversion)
         
         return menu
