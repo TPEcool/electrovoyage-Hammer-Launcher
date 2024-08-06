@@ -43,6 +43,7 @@ def upgradeMediaList(medialist: dict) -> dict:
     '''
     medialist.setdefault('version', '1')
     version = medialist['version']
+    #print(medialist)
     if version == LATEST_SDK_VERSION:
         return medialist
     elif float(version) > float(LATEST_SDK_VERSION):
@@ -53,7 +54,7 @@ def upgradeMediaList(medialist: dict) -> dict:
             case "1":
                 newmedialist: dict[str, list[dict[str, str]]] = {}
                 for categoryname, categoryapps in medialist['medialist'].items():
-                    print(categoryname, categoryapps)
+                    #print(categoryname, categoryapps)
                     newmedialist[categoryname] = []
                     
                     for _, programdata in categoryapps.items():

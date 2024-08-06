@@ -391,13 +391,15 @@ else:
         json.dump(sdkdata, jsfile, indent=4)
         
     reloadsdk()
+    
+with open(os.path.join(APP_DIRECTORY, 'sdk.json'), 'w') as sdk:
+    sdkdata = medialist_transform.upgradeMediaList(sdkdata)
+    json.dump(sdkdata, sdk, indent=4)
         
 global medialist
+medialist = sdkdata['medialist']
 for group, programs in medialist.items():
     sdkdata.setdefault('version', '1')
-    
-    with open(os.path.join(APP_DIRECTORY, 'sdk.json'), 'w') as sdk:
-        json.dump(medialist_transform.upgradeMediaList(sdkdata), sdk, indent=4)
     
     if sdkdata['version'] == '1':
         for programid, program in programs.items():
