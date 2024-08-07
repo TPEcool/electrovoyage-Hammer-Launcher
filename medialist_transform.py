@@ -1,6 +1,3 @@
-import os
-import webbrowser
-
 def transformMediaList(medialist: dict) -> dict:
     '''
     Convert MediaList.txt contents to sdk.json contents.
