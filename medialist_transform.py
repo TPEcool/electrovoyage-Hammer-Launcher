@@ -36,6 +36,7 @@ def transformMediaList(medialist: dict) -> dict:
     return newdict
 
 LATEST_SDK_VERSION = "2"
+VALVE_ORIGINAL_ICONS = ['icon_create', 'icon_document', 'icon_faceposer', 'icon_file', 'icon_files', 'icon_folder', 'icon_folder_16', 'icon_hammer', 'icon_hl2_media', 'icon_hlmv', 'icon_refresh', 'icon_reset', 'icon_scenemanager', 'icon_soft', 'icon_weblink']
 
 def upgradeMediaList(medialist: dict) -> dict:
     '''
@@ -57,7 +58,7 @@ def upgradeMediaList(medialist: dict) -> dict:
                     newmedialist[categoryname] = []
                     
                     for _, programdata in categoryapps.items():
-                        programdata['invert_image'] = False
+                        programdata['invert_image'] = programdata['Image'] not in VALVE_ORIGINAL_ICONS
                         newmedialist[categoryname].append(programdata)
                         
                 return {
