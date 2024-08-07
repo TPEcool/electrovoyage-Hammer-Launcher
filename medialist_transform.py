@@ -48,7 +48,6 @@ def upgradeMediaList(medialist: dict) -> dict:
         return medialist
     elif float(version) > float(LATEST_SDK_VERSION):
         raise ValueError('sdk.json version is too new. To regenerate file, please delete it and restart program.')
-        return
     else:
         match version:
             case "1":
@@ -58,7 +57,7 @@ def upgradeMediaList(medialist: dict) -> dict:
                     newmedialist[categoryname] = []
                     
                     for _, programdata in categoryapps.items():
-                        programdata['invert_image'] = True
+                        programdata['invert_image'] = False
                         newmedialist[categoryname].append(programdata)
                         
                 return {

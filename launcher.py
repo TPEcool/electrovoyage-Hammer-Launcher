@@ -1,5 +1,5 @@
 from ttkbootstrap import *
-from srctools import keyvalues, Keyvalues
+from srctools import Keyvalues
 import os
 from richpresence import main as presence, stop as stoppresence
 import threading
@@ -15,6 +15,105 @@ import webbrowser
 import subprocess
 from shlex import split as splitcommand
 from electrovoyage_asset_unpacker import AssetPack
+from requests import get as getrequest
+from requests.exceptions import RequestException
+import re
+
+#def is_newer_version(version_string):
+#    # Regex to find numeric components
+#    pattern = r'^(\d+\.)?(\d+\.)?(\*|\d+)$'
+#    
+#    # Extract version numbers from the strings
+#    version_from_string = re.findall(pattern, version_string)
+#    version_from_variable = re.findall(pattern, VERSION)
+#    
+#    # Compare the first found version (assuming valid input)
+#    if version_from_string and version_from_variable:
+#        # Split the versions into lists of integers
+#        version1 = list(map(int, version_from_string[0].split('.')))
+#        version2 = list(map(int, version_from_variable[0].split('.')))
+#        
+#        # Compare versions
+#        return version1 > version2
+#    
+#    return False
+
+def _find_first(s: str, chars: list[str] | tuple[str]) -> int:
+    '''
+    In `s`, find the first character of `chars` that exists in this string.
+    '''
+    for i in chars:
+        ind = s.find(i)
+        if ind != -1:
+            return ind
+    
+    return -1
+
+def _find_last(s: str, chars: list[str] | tuple[str]) -> int:
+    '''
+    In `s`, find the first character of `chars` that exists in this string, iterating from the end.
+    '''
+    found_ind = -1
+    for ind, i in enumerate(s[::-1]):
+        if i in chars:
+            found_ind = ind
+            break
+    
+    return len(s) - found_ind
+
+#find_version_number = lambda s: _find_first(s, tuple('01234567890.'))
+#find_version_number = lambda s: _find_first(s, tuple('01234567890.'))
+
+def find_version_number(version: str) -> slice:
+    return slice(
+        _find_first(version, tuple('01234567890.')),
+        _find_last(version, tuple('01234567890.'))
+    )
+
+def is_newer_version(version: str) -> bool:
+    ver_ind = find_version_number(version)
+    ver_string_ind = find_version_number(VERSION)
+    
+    ver_string_ints = [int(i) for i in VERSION[ver_string_ind].split('.')]
+    ver_ints = [int(i) for i in version[ver_ind].split('.')]
+    
+    for i, j in zip(ver_string_ints, ver_ints):
+        if i < j:
+            return True
+        
+    return False
+
+VERSION = '0.9.1'
+UPDATE_AVAILABLE = 'update_available'
+NOUPDATE = 'noupdate'
+UPDATE_FETCH_FAILED = 'update_cannot_fetch'
+
+def checkforupdates() -> str:
+    '''
+    Return whether an update is available.
+    '''
+    try:
+        resp = getrequest('https://api.github.com/repos/TPEcool/electrovoyage-Hammer-Launcher/releases/latest')
+        resp_data = resp.json()
+        
+        #print)
+        if is_newer_version(resp_data['name']):
+            return UPDATE_AVAILABLE
+        else:
+            return NOUPDATE
+    except RequestException:
+        stoppresence()
+        return UPDATE_FETCH_FAILED
+    
+def makeversionstring() -> str:
+    update_status = checkforupdates()
+    match update_status:
+        case 'noupdate':
+            return VERSION
+        case 'update_available':
+            return f'{VERSION} (update available!)'
+        case 'update_cannot_fetch':
+            return f'{VERSION} (failed to check for updates)'
 
 PYINSTALLER = getattr(sys, 'frozen', False)
 
@@ -38,7 +137,6 @@ if PYINSTALLER:
 else:
     APP_DIRECTORY = getcwd()
 
-VERSION = '0.9'
 assetpack = AssetPack(os.path.join(getcwd(), 'resources', 'assets.packed'))
 
 win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
@@ -80,7 +178,7 @@ appframe.pack(expand=True, fill=BOTH)
 applist = ScrolledFrame(appframe, padding=10, width=400)
 applist.pack(expand=True, fill=BOTH)
 
-statusstr = Label(win, text=f'Version {VERSION}', style=INVERSE + DARK)
+statusstr = Label(win, text=f'Version {makeversionstring()}', style=INVERSE + DARK)
 statusstr.pack(side=BOTTOM, anchor=S, fill=X)
     
 global launcherpath, sdkdata
@@ -291,7 +389,7 @@ class ApplicationList:
         medialist[groupname] = [i.serialize() for i in self.group_lists[groupname]]
         sdkdata['medialist'] = medialist
         
-        print(sdkdata)
+        #print(sdkdata)
         #print(json.dumps(sdkdata, indent=4))
         
         savesdk()        
