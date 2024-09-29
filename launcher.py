@@ -185,15 +185,6 @@ def invertAlpha(_im: Image.Image) -> Image.Image:
 
 ProgramType = str | None
 
-'''class _FakeTkBoolVar:
-    def __init__(self, setter, getter):
-        self.setter = setter
-        self.getter = getter
-    def get() -> bool:
-        return self.getter()
-    def set(value: bool):
-        self.setter(value)'''
-
 class App:
     @property
     def invert_image(self) -> bool:
