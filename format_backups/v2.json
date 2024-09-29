@@ -1,6 +1,7 @@
 {
     "binpath": "D:/Steam/steamapps/common/Portal 2/bin",
     "sdkpath": "D:/Steam/steamapps/common/Portal 2/bin\\SDKLauncher",
+    "version": "2",
     "medialist": {
         "Applications": [
             {
@@ -78,6 +79,5 @@
                 "ShellExecute": null
             }
         ]
-    },
-    "version": "2"
+    }
 }

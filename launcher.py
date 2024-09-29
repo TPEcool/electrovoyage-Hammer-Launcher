@@ -17,26 +17,7 @@ from shlex import split as splitcommand
 from electrovoyage_asset_unpacker import AssetPack
 from requests import get as getrequest
 from requests.exceptions import RequestException
-import re
-
-#def is_newer_version(version_string):
-#    # Regex to find numeric components
-#    pattern = r'^(\d+\.)?(\d+\.)?(\*|\d+)$'
-#    
-#    # Extract version numbers from the strings
-#    version_from_string = re.findall(pattern, version_string)
-#    version_from_variable = re.findall(pattern, VERSION)
-#    
-#    # Compare the first found version (assuming valid input)
-#    if version_from_string and version_from_variable:
-#        # Split the versions into lists of integers
-#        version1 = list(map(int, version_from_string[0].split('.')))
-#        version2 = list(map(int, version_from_variable[0].split('.')))
-#        
-#        # Compare versions
-#        return version1 > version2
-#    
-#    return False
+ask_for_gameinfo = medialist_transform.ask_for_gameinfo
 
 def _find_first(s: str, chars: list[str] | tuple[str]) -> int:
     '''
@@ -83,7 +64,7 @@ def is_newer_version(version: str) -> bool:
         
     return False
 
-VERSION = '0.9.1'
+VERSION = '0.9.3'
 UPDATE_AVAILABLE = 'update_available'
 NOUPDATE = 'noupdate'
 UPDATE_FETCH_FAILED = 'update_cannot_fetch'
@@ -96,7 +77,6 @@ def checkforupdates() -> str:
         resp = getrequest('https://api.github.com/repos/TPEcool/electrovoyage-Hammer-Launcher/releases/latest')
         resp_data = resp.json()
         
-        #print)
         if is_newer_version(resp_data['name']):
             return UPDATE_AVAILABLE
         else:
@@ -114,6 +94,10 @@ def makeversionstring() -> str:
             return f'{VERSION} (update available!)'
         case 'update_cannot_fetch':
             return f'{VERSION} (failed to check for updates)'
+        
+def showversionstring():
+    s = makeversionstring()
+    statusstr.configure(text=f'Version {s}')
 
 PYINSTALLER = getattr(sys, 'frozen', False)
 
@@ -141,7 +125,8 @@ assetpack = AssetPack(os.path.join(getcwd(), 'resources', 'assets.packed'))
 
 win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()
-showwarning('Hammer launcher beta', 'This is a beta version of electrovoyage\'s Hammer Launcher. If another program shows up in your Discord profile instead of the Hammer launcher or if you encounter any other sort of issue, please report them to:\n\nelectrovoyagesoftware@gmail.com, or\n\nhttps://github.com/TPEcool/electrovoyage-Hammer-Launcher/issues')
+if '--shutup' not in sys.argv:
+    showwarning('Hammer launcher beta', 'This is a beta version of electrovoyage\'s Hammer Launcher. If another program shows up in your Discord profile instead of the Hammer launcher or if you encounter any other sort of issue, please report them to:\n\nelectrovoyagesoftware@gmail.com, or\n\nhttps://github.com/TPEcool/electrovoyage-Hammer-Launcher/issues\n\nAdd the "--shutup" startup argument to remove this warning.')
 presencethread = threading.Thread(target=presence, daemon=True)
 presencethread.start()
 
@@ -149,7 +134,6 @@ def RightclickMenu(widget: tk.Widget, menu: Menu):
     widget.bind('<Button-3>', lambda x: menu.tk_popup(x.x_root, x.y_root))
 
 def onWindowClosed():
-    stoppresence()
     win.destroy()
     
 trebuchet_bold = Font(family='Trebuchet MS', size=16, weight='bold')
@@ -165,7 +149,15 @@ welcome_frame.pack(side=TOP, fill=BOTH, anchor=N)
 
 Label(welcome_frame, text='Welcome to', justify=LEFT, font = ('Trebuchet MS', 11), background='#303030').grid(row=0, column=0, sticky=NW)
 Label(welcome_frame, text='electrovoyage.\'s Hammer Launcher', justify=LEFT, font=trebuchet_bold, background='#303030').grid(row=1, column=0, sticky=SW)
-Label(welcome_frame, image=logo, background='#303030').grid(row=0, column=1, rowspan=2, sticky=S)
+logo_in_the_corner = Label(welcome_frame, image=logo, background='#303030')
+logo_in_the_corner.grid(row=0, column=1, rowspan=2, sticky=S)
+
+logorightclickmenu = Menu(logo_in_the_corner)
+
+logorightclickmenu.add_command(label='Check for updates', command=showversionstring)
+logorightclickmenu.add_command(label='Open GitHub repository', command = lambda: webbrowser.open('https://github.com/TPEcool/electrovoyage-Hammer-Launcher'))
+
+RightclickMenu(logo_in_the_corner, logorightclickmenu)
 
 welcome_frame.columnconfigure(0, weight=1)
 welcome_frame.columnconfigure(1, weight=0)
@@ -464,31 +456,21 @@ def reloadsdk():
     medialist = sdkdata['medialist']
     #print(medialist)
 
-if 'sdk.json' in os.listdir(APP_DIRECTORY):
-    reloadsdk()
-    
-    #app_list_manager.addApp()
-    
-else:
-    showinfo('Media list not found', 'Could not find the media list file (sdk.json). Please locate your game\'s bin folder in the next dialog.')
-    while True:
-        dir = askdirectory(mustexist=True, title='Locate your bin folder')
-        if not dir:
-            stoppresence()
-            sys.exit()
-        elif 'SDKLauncher' not in os.listdir(dir):
-            showerror('Invalid bin folder', 'Could not find SDKLauncher in specified folder. Please specify the correct bin folder.')
-        else: break
-    launcherpath = os.path.join(dir, 'SDKLauncher')
+if 'sdk.json' not in os.listdir(APP_DIRECTORY):
+    ginfo = ask_for_gameinfo()
+    #launcherpath = os.path.join(dir, 'SDKLauncher')
+    vproject = os.path.dirname(ginfo)
+    binpath = os.path.join(os.path.dirname(vproject), 'bin')
+    launcherpath = os.path.join(binpath, 'SDKLauncher')
     with open(os.path.join(launcherpath, 'MediaList.txt')) as fp:
         kv = Keyvalues.parse(fp.read())
         
-    sdkdata = medialist_transform.upgradeMediaList({'binpath': dir, 'sdkpath': launcherpath, 'medialist': medialist_transform.transformMediaList(kv.as_dict())})
+    sdkdata = medialist_transform.upgradeMediaList({'binpath': binpath, 'sdkpath': launcherpath, 'vproject': vproject, 'medialist': medialist_transform.transformMediaList(kv.as_dict())})
 
     with open(os.path.join(APP_DIRECTORY, 'sdk.json'), 'w') as jsfile:
         json.dump(sdkdata, jsfile, indent=4)
         
-    reloadsdk()
+reloadsdk()
     
 with open(os.path.join(APP_DIRECTORY, 'sdk.json'), 'w') as sdk:
     sdkdata = medialist_transform.upgradeMediaList(sdkdata)
@@ -498,27 +480,18 @@ global medialist
 medialist = sdkdata['medialist']
 for group, programs in medialist.items():
     sdkdata.setdefault('version', '1')
-    
-    if sdkdata['version'] == '1':
-        for programid, program in programs.items():
-            program.setdefault('invert_image', True)
-            _img = Image.open(os.path.join(sdkdata['sdkpath'], 'vgui', program['Image'] + '.tga'))
-            img = invertAlpha(_img) if program['invert_image'] else _img
-            inverted_img = _img if program['invert_image'] else invertAlpha(_img)
-            program.setdefault('Program', None)
-            program.setdefault('ShellExecute', None)
-            app_list_manager.addApp(program['Title'], program['Image'], img, inverted_img, group, program['Program'], program['ShellExecute'], programid, program['invert_image'])
-            
-    else:
-        for program in programs:
-            _img = Image.open(os.path.join(sdkdata['sdkpath'], 'vgui', program['Image'] + '.tga'))
-            img = invertAlpha(_img) if program['invert_image'] else _img
-            inverted_img = _img if program['invert_image'] else invertAlpha(_img)
-            program.setdefault('Program', None)
-            program.setdefault('ShellExecute', None)
-            app_list_manager.addApp(program['Title'], program['Image'], img, inverted_img, group, program['Program'], program['ShellExecute'], program['Title'].lower(), program['invert_image'])
+        
+    for program in programs:
+        _img = Image.open(os.path.join(sdkdata['sdkpath'], 'vgui', program['Image'] + '.tga'))
+        img = invertAlpha(_img) if program['invert_image'] else _img
+        inverted_img = _img if program['invert_image'] else invertAlpha(_img)
+        program.setdefault('Program', None)
+        program.setdefault('ShellExecute', None)
+        app_list_manager.addApp(program['Title'], program['Image'], img, inverted_img, group, program['Program'], program['ShellExecute'], program['Title'].lower(), program['invert_image'])
     
 win.wm_protocol('WM_DELETE_WINDOW', onWindowClosed)
+
+os.environ['VPROJECT'] = sdkdata['vproject']
 
 win.deiconify()
 win.focus()

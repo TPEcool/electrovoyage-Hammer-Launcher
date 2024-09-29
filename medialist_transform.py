@@ -1,3 +1,22 @@
+import os
+import sys
+from tkinter.filedialog import askopenfilename
+from tkinter.messagebox import showwarning, showinfo
+
+def ask_for_gameinfo() -> str:
+    showinfo('Specify gameinfo path', 'Please locate your game\'s gameinfo in the next dialog.')
+    while True:
+        ginfo = askopenfilename(title='Locate your gameinfo', filetypes=[('Gameinfo / text file', '.txt')], defaultextension='.txt')
+        if not ginfo.strip():
+            sys.exit()
+        elif not os.path.exists(os.path.join(
+            os.path.dirname(os.path.dirname(ginfo)), 'bin'
+        )):
+            showwarning('Invalid path', 'This file does not appear to be in a valid Source engine game or it is not inside a valid content folder. Please specify a valid path.')
+        else: break
+        
+    return ginfo
+
 def transformMediaList(medialist: dict) -> dict:
     '''
     Convert MediaList.txt contents to sdk.json contents.
@@ -32,7 +51,7 @@ def transformMediaList(medialist: dict) -> dict:
             
     return newdict
 
-LATEST_SDK_VERSION = "2"
+LATEST_SDK_VERSION = '3'
 VALVE_ORIGINAL_ICONS = ['icon_create', 'icon_document', 'icon_faceposer', 'icon_file', 'icon_files', 'icon_folder', 'icon_folder_16', 'icon_hammer', 'icon_hl2_media', 'icon_hlmv', 'icon_refresh', 'icon_reset', 'icon_scenemanager', 'icon_soft', 'icon_weblink']
 
 def upgradeMediaList(medialist: dict) -> dict:
@@ -47,8 +66,15 @@ def upgradeMediaList(medialist: dict) -> dict:
     elif float(version) > float(LATEST_SDK_VERSION):
         raise ValueError('sdk.json version is too new. To regenerate file, please delete it and restart program.')
     else:
+        if int(version) < 3:
+            medialist.setdefault('vproject')
+            if medialist['vproject']:
+                ginfo = medialist['vproject']
+            else:
+                ginfo = ask_for_gameinfo()
+            contentpath = os.path.dirname(ginfo)
         match version:
-            case "1":
+            case '1':
                 newmedialist: dict[str, list[dict[str, str]]] = {}
                 for categoryname, categoryapps in medialist['medialist'].items():
                     #print(categoryname, categoryapps)
@@ -61,6 +87,11 @@ def upgradeMediaList(medialist: dict) -> dict:
                 return {
                     'binpath': medialist['binpath'],
                     'sdkpath': medialist['sdkpath'],
+                    'vproject': contentpath,
                     'version': LATEST_SDK_VERSION,
                     'medialist': newmedialist,
                 }
+            case '2':
+                newmedialist = medialist.copy()
+                newmedialist['vproject'] = contentpath
+                return newmedialist
