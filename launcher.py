@@ -64,7 +64,7 @@ def is_newer_version(version: str) -> bool:
         
     return False
 
-VERSION = '0.9.3'
+VERSION = '0.9.2'
 UPDATE_AVAILABLE = 'update_available'
 NOUPDATE = 'noupdate'
 UPDATE_FETCH_FAILED = 'update_cannot_fetch'
