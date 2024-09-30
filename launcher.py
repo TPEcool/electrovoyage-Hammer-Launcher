@@ -17,6 +17,7 @@ from shlex import split as splitcommand
 from electrovoyage_asset_unpacker import AssetPack
 from requests import get as getrequest
 from requests.exceptions import RequestException
+from time import sleep
 ask_for_gameinfo = medialist_transform.ask_for_gameinfo
 
 def _find_first(s: str, chars: list[str] | tuple[str]) -> int:
@@ -65,11 +66,10 @@ def is_newer_version(version: str) -> bool:
     return False
 
 VERSION = '0.9.2'
-UPDATE_AVAILABLE = 'update_available'
-NOUPDATE = 'noupdate'
-UPDATE_FETCH_FAILED = 'update_cannot_fetch'
 
-def checkforupdates() -> str:
+UPDATE_FETCH_FAILED, NOUPDATE, UPDATE_AVAILABLE = range(3)
+
+def checkforupdates_noretry() -> int:
     '''
     Return whether an update is available.
     '''
@@ -82,22 +82,48 @@ def checkforupdates() -> str:
         else:
             return NOUPDATE
     except RequestException:
-        stoppresence()
         return UPDATE_FETCH_FAILED
+    
+def checkforupdates(retries: int = 5, delay_ms: int = 1000) -> int:
+    '''
+    Check for updates, with a certain amount of retries and a specified delay between them.
+    '''
+    
+    returns = []
+    for _ in range(retries):
+        result = checkforupdates_noretry()
+        returns.append(result)
+        
+        if result > UPDATE_FETCH_FAILED:
+            break
+        
+        sleep(delay_ms / 1000)
+        win.update()
+        
+    best_return = max(returns)
+    
+    if best_return == UPDATE_FETCH_FAILED:
+        print(f'Update check failed after {retries} retries. Assuming the internet is unavailable. Shutting down Rich Presence.')
+        stoppresence()
+        
+    return best_return
     
 def makeversionstring() -> str:
     update_status = checkforupdates()
     match update_status:
-        case 'noupdate':
-            return VERSION
-        case 'update_available':
-            return f'{VERSION} (update available!)'
-        case 'update_cannot_fetch':
-            return f'{VERSION} (failed to check for updates)'
+        case 1:
+            return (VERSION, update_status)
+        case 2:
+            return (f'{VERSION} (update available!)', update_status)
+        case 0:
+            return (f'{VERSION} (failed to check for updates)', update_status)
         
-def showversionstring():
-    s = makeversionstring()
+def showversionstring() -> int:
+    win.configure(cursor='starting')
+    s, status = makeversionstring()
     statusstr.configure(text=f'Version {s}')
+    win.configure(cursor='arrow')
+    return status
 
 PYINSTALLER = getattr(sys, 'frozen', False)
 
@@ -128,13 +154,33 @@ win.withdraw()
 if '--shutup' not in sys.argv:
     showwarning('Hammer launcher beta', 'This is a beta version of electrovoyage\'s Hammer Launcher. If another program shows up in your Discord profile instead of the Hammer launcher or if you encounter any other sort of issue, please report them to:\n\nelectrovoyagesoftware@gmail.com, or\n\nhttps://github.com/TPEcool/electrovoyage-Hammer-Launcher/issues\n\nAdd the "--shutup" startup argument to remove this warning.')
 presencethread = threading.Thread(target=presence, daemon=True)
-presencethread.start()
 
 def RightclickMenu(widget: tk.Widget, menu: Menu):
     widget.bind('<Button-3>', lambda x: menu.tk_popup(x.x_root, x.y_root))
 
 def onWindowClosed():
     win.destroy()
+    
+def dark_title_bar(window: Window):
+    '''
+    Make window have a dark title bar.
+    '''
+    import ctypes as ct
+    window.update()
+    DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+    set_window_attribute = ct.windll.dwmapi.DwmSetWindowAttribute
+    get_parent = ct.windll.user32.GetParent
+    hwnd = get_parent(window.winfo_id())
+    rendering_policy = DWMWA_USE_IMMERSIVE_DARK_MODE
+    value = 2
+    value = ct.c_int(value)
+    set_window_attribute(hwnd, rendering_policy, ct.byref(value), ct.sizeof(value))
+    
+if os.name == 'nt' and '--defaulttitlebar' not in sys.argv:
+    dark_title_bar(win)
+    
+if '--superdark' in sys.argv:
+    win.style.theme_use('black')
     
 trebuchet_bold = Font(family='Trebuchet MS', size=16, weight='bold')
     
@@ -155,7 +201,9 @@ logo_in_the_corner.grid(row=0, column=1, rowspan=2, sticky=S)
 logorightclickmenu = Menu(logo_in_the_corner)
 
 logorightclickmenu.add_command(label='Check for updates', command=showversionstring)
+logorightclickmenu.add_separator()
 logorightclickmenu.add_command(label='Open GitHub repository', command = lambda: webbrowser.open('https://github.com/TPEcool/electrovoyage-Hammer-Launcher'))
+logorightclickmenu.add_command(label='See electrovoyage. on YouTube', command = lambda: webbrowser.open('https://youtube.com/@electrovoyage.'))
 
 RightclickMenu(logo_in_the_corner, logorightclickmenu)
 
@@ -167,10 +215,14 @@ welcome_frame.columnconfigure(1, weight=0)
 appframe = Frame(win)
 appframe.pack(expand=True, fill=BOTH)
 
-applist = ScrolledFrame(appframe, padding=10, width=400)
+applist = ScrolledFrame(appframe, padding=10, width=400, bootstyle=ROUND + (LIGHT if '--darkscrollbar' not in sys.argv else ''))
+applist.configure(style='')
 applist.pack(expand=True, fill=BOTH)
 
-statusstr = Label(win, text=f'Version {makeversionstring()}', style=INVERSE + DARK)
+statusstr = Label(win, text='', style=INVERSE + DARK)
+if showversionstring() >= NOUPDATE:
+    presencethread.start()
+
 statusstr.pack(side=BOTTOM, anchor=S, fill=X)
     
 global launcherpath, sdkdata
