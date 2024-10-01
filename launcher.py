@@ -18,6 +18,8 @@ from electrovoyage_asset_unpacker import AssetPack
 from requests import get as getrequest
 from requests.exceptions import RequestException
 from time import sleep
+from datetime import date
+from random import shuffle
 ask_for_gameinfo = medialist_transform.ask_for_gameinfo
 
 def _find_first(s: str, chars: list[str] | tuple[str]) -> int:
@@ -127,10 +129,26 @@ def showversionstring() -> int:
 
 PYINSTALLER = getattr(sys, 'frozen', False)
 
+def screw_up_words(s: str) -> str:
+    '''
+    Randomize word order in string.
+    '''
+    words = [i.strip() for i in s.split(' ')]
+    if len(words) < 2: return s
+    original_words = words.copy()
+    for _ in range(5):
+        shuffle(words)
+    return ' '.join(words)
+
+def aprilfools(s: str) -> str:
+    if date.today().day == 1 and date.today().month == 4: pass
+    return screw_up_words(s)
+    return s
+
 if PYINSTALLER:
     try:
         import pyi_splash as spl # type: ignore
-        spl.update_text('electrovoyage\'s Hammer Launcher')
+        spl.update_text(aprilfools('electrovoyage\'s Hammer Launcher'))
         spl.close()
 
         del spl
@@ -149,10 +167,10 @@ else:
 
 assetpack = AssetPack(os.path.join(getcwd(), 'resources', 'assets.packed'))
 
-win = Window('electrovoyage\'s Hammer Launcher', 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
+win = Window(aprilfools('electrovoyage\'s Hammer Launcher'), 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()
 if '--shutup' not in sys.argv:
-    showwarning('Hammer launcher beta', 'This is a beta version of electrovoyage\'s Hammer Launcher. If another program shows up in your Discord profile instead of the Hammer launcher or if you encounter any other sort of issue, please report them to:\n\nelectrovoyagesoftware@gmail.com, or\n\nhttps://github.com/TPEcool/electrovoyage-Hammer-Launcher/issues\n\nAdd the "--shutup" startup argument to remove this warning.')
+    showwarning(aprilfools('Hammer launcher beta'), aprilfools('This is a beta version of electrovoyage\'s Hammer Launcher. If another program shows up in your Discord profile instead of the Hammer launcher or if you encounter any other sort of issue, please report them to:\n\nelectrovoyagesoftware@gmail.com, or\n\nhttps://github.com/TPEcool/electrovoyage-Hammer-Launcher/issues\n\nAdd the "--shutup" startup argument to remove this warning.'))
 presencethread = threading.Thread(target=presence, daemon=True)
 
 def RightclickMenu(widget: tk.Widget, menu: Menu):
@@ -193,17 +211,31 @@ large_logo = ImageTk.PhotoImage(pil_logo.resize((100, 100), Image.BILINEAR))
 welcome_frame = Frame(win, style=DARK)
 welcome_frame.pack(side=TOP, fill=BOTH, anchor=N)
 
-Label(welcome_frame, text='Welcome to', justify=LEFT, font = ('Trebuchet MS', 11), background='#303030').grid(row=0, column=0, sticky=NW)
-Label(welcome_frame, text='electrovoyage.\'s Hammer Launcher', justify=LEFT, font=trebuchet_bold, background='#303030').grid(row=1, column=0, sticky=SW)
+welcometext1 = Label(welcome_frame, text=aprilfools('Welcome to'), justify=LEFT, font = ('Trebuchet MS', 11), background='#303030')
+welcometext1.grid(row=0, column=0, sticky=NW)
+welcometext2 = Label(welcome_frame, text=aprilfools('electrovoyage.\'s Hammer Launcher'), justify=LEFT, font=trebuchet_bold, background='#303030')
+welcometext2.grid(row=1, column=0, sticky=SW)
 logo_in_the_corner = Label(welcome_frame, image=logo, background='#303030')
 logo_in_the_corner.grid(row=0, column=1, rowspan=2, sticky=S)
 
+def on_logo_leftclick(*args):
+    logo_in_the_corner.configure(relief=SUNKEN)
+    
+def on_logo_leftclick_released(*args):
+    logo_in_the_corner.configure(relief=FLAT)
+    welcometext1.configure(text=welcometext1.cget('text')[::-1])
+    welcometext2.configure(text=welcometext2.cget('text')[::-1])
+    win.title(win.title()[::-1])
+    
+logo_in_the_corner.bind('<Button-1>', on_logo_leftclick)
+logo_in_the_corner.bind('<ButtonRelease-1>', on_logo_leftclick_released)
+
 logorightclickmenu = Menu(logo_in_the_corner)
 
-logorightclickmenu.add_command(label='Check for updates', command=showversionstring)
+logorightclickmenu.add_command(label=aprilfools('Check for updates'), command=showversionstring)
 logorightclickmenu.add_separator()
-logorightclickmenu.add_command(label='Open GitHub repository', command = lambda: webbrowser.open('https://github.com/TPEcool/electrovoyage-Hammer-Launcher'))
-logorightclickmenu.add_command(label='See electrovoyage. on YouTube', command = lambda: webbrowser.open('https://youtube.com/@electrovoyage.'))
+logorightclickmenu.add_command(label=aprilfools('GitHub repository'), command = lambda: webbrowser.open('https://github.com/TPEcool/electrovoyage-Hammer-Launcher'))
+logorightclickmenu.add_command(label=aprilfools('electrovoyage. on YouTube'), command = lambda: webbrowser.open('https://youtube.com/@electrovoyage.'))
 
 RightclickMenu(logo_in_the_corner, logorightclickmenu)
 
@@ -301,10 +333,10 @@ class App:
         menu.add_command(label='Run', command=self.runcommand)
         menu.add_separator()
         #menu.add_command(label='Move to testgroup', command=lambda: app_list_manager.move_app(self, 'Assets'))
-        menu.add_command(label='Move up', command=lambda: app_list_manager.swap_above(self))
-        menu.add_command(label='Move down', command=lambda: app_list_manager.swap_below(self))
+        menu.add_command(label=aprilfools('Move up'), command=lambda: app_list_manager.swap_above(self))
+        menu.add_command(label=aprilfools('Move down'), command=lambda: app_list_manager.swap_below(self))
         menu.add_separator()
-        menu.add_checkbutton(label='Invert image', onvalue=True, offvalue=False, variable=self._invert_var, command=self.saveimageinversion)
+        menu.add_checkbutton(label=aprilfools('Invert image'), onvalue=True, offvalue=False, variable=self._invert_var, command=self.saveimageinversion)
         
         return menu
     
@@ -436,7 +468,7 @@ class ApplicationList:
         
     def _makeframe(self, app: App, groupname: str):
         frame = Frame(self.groups[groupname], padding=5)
-        namelabel = Label(frame, text=app.name, justify=LEFT, font=('Inter', 12))
+        namelabel = Label(frame, text=aprilfools(app.name), justify=LEFT, font=('Inter', 12))
         namelabel.grid(row=0, column=0)
         imagelabel = Label(frame, image=app.smallicontk)
         imagelabel.grid(column=1, row=0, sticky=E, padx=5)
