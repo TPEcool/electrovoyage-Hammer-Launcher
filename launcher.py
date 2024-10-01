@@ -135,7 +135,6 @@ def screw_up_words(s: str) -> str:
     '''
     words = [i.strip() for i in s.split(' ')]
     if len(words) < 2: return s
-    original_words = words.copy()
     for _ in range(5):
         shuffle(words)
     return ' '.join(words)
