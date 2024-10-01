@@ -14,7 +14,7 @@ import medialist_transform
 import webbrowser
 import subprocess
 from shlex import split as splitcommand
-from electrovoyage_asset_unpacker import AssetPack
+from electrovoyage_asset_unpacker import AssetPackWrapper
 from requests import get as getrequest
 from requests.exceptions import RequestException
 from time import sleep
@@ -141,8 +141,8 @@ def screw_up_words(s: str) -> str:
     return ' '.join(words)
 
 def aprilfools(s: str) -> str:
-    if date.today().day == 1 and date.today().month == 4: pass
-    return screw_up_words(s)
+    if date.today().day == 1 and date.today().month == 4:
+        return screw_up_words(s)
     return s
 
 if PYINSTALLER:
@@ -165,7 +165,7 @@ if PYINSTALLER:
 else:
     APP_DIRECTORY = getcwd()
 
-assetpack = AssetPack(os.path.join(getcwd(), 'resources', 'assets.packed'))
+assetpack = AssetPackWrapper(os.path.join(getcwd(), 'resources', 'assets.packed'), PYINSTALLER, os.path.join(APP_DIRECTORY, 'resources'))
 
 win = Window(aprilfools('electrovoyage.\'s Hammer Launcher'), 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()

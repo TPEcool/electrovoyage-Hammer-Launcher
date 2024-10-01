@@ -107,6 +107,33 @@ class AssetPack:
         f.write(self.getfile(packpath).read())
         return f
     
+class AssetPackEmulator:
+    '''
+    Fake asset pack that actually streams in from a real folder.
+    '''
+    def __init__(self, basefolder: str):
+        '''
+        Initialize a new assetpack emulator with `basefolder` as package root.
+        '''
+        self.basefolder = basefolder
+    def getfile(self, filepath: str) -> BufferedReader:
+        '''
+        Return handle for file at path.
+        '''
+        return open(path.join(self.basefolder, *filepath.split('/')), 'rb')
+    
+def AssetPackWrapper(pack: str, frozen: bool, resourcepath: str | None = None) -> AssetPack | AssetPackEmulator:
+    '''
+    Return a real AssetPack if `frozen`, otherwise return an assetpack emulator from a resource path.
+    `pack` is a path to the asset pack and must be specified.
+    `resourcepath` is an optional path to the `resources` folder. If not specified, assume the asset pack specified by `pack` is in the `resources` folder.
+    '''
+    if frozen:
+        resourcepath_ = resourcepath if resourcepath is not None else path.dirname(pack)
+        return AssetPackEmulator(resourcepath_)
+    else:
+        return AssetPack(pack)
+    
 class StreamingAssetPack:
     '''
     Asset pack that is extracted to a temporary folder.
