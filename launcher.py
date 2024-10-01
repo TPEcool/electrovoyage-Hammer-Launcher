@@ -76,7 +76,7 @@ def checkforupdates_noretry() -> int:
     Return whether an update is available.
     '''
     try:
-        resp = getrequest('https://api.github.com/repos/TPEcool/electrovoyage-Hammer-Launcher/releases/latest')
+        resp = getrequest('https://api.github.com/repos/electrovoyage/electrovoyage-Hammer-Launcher/releases/latest')
         resp_data = resp.json()
         
         if is_newer_version(resp_data['name']):
@@ -169,7 +169,7 @@ assetpack = AssetPackWrapper(os.path.join(getcwd(), 'resources', 'assets.packed'
 win = Window(aprilfools('electrovoyage.\'s Hammer Launcher'), 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()
 if '--shutup' not in sys.argv:
-    showwarning(aprilfools('Hammer launcher beta'), aprilfools('This is a beta version of electrovoyage\'s Hammer Launcher. If another program shows up in your Discord profile instead of the Hammer launcher or if you encounter any other sort of issue, please report them to:\n\nelectrovoyagesoftware@gmail.com, or\n\nhttps://github.com/TPEcool/electrovoyage-Hammer-Launcher/issues\n\nAdd the "--shutup" startup argument to remove this warning.'))
+    showwarning(aprilfools('Hammer launcher beta'), aprilfools('This is a beta version of electrovoyage\'s Hammer Launcher. If another program shows up in your Discord profile instead of the Hammer launcher or if you encounter any other sort of issue, please report them to:\n\nelectrovoyagesoftware@gmail.com, or\n\nhttps://github.com/electrovoyage/electrovoyage-Hammer-Launcher/issues\n\nAdd the "--shutup" startup argument to remove this warning.'))
 presencethread = threading.Thread(target=presence, daemon=True)
 
 def RightclickMenu(widget: tk.Widget, menu: Menu):
@@ -233,7 +233,7 @@ logorightclickmenu = Menu(logo_in_the_corner)
 
 logorightclickmenu.add_command(label=aprilfools('Check for updates'), command=showversionstring)
 logorightclickmenu.add_separator()
-logorightclickmenu.add_command(label=aprilfools('GitHub repository'), command = lambda: webbrowser.open('https://github.com/TPEcool/electrovoyage-Hammer-Launcher'))
+logorightclickmenu.add_command(label=aprilfools('GitHub repository'), command = lambda: webbrowser.open('https://github.com/electrovoyage/electrovoyage-Hammer-Launcher'))
 logorightclickmenu.add_command(label=aprilfools('electrovoyage. on YouTube'), command = lambda: webbrowser.open('https://youtube.com/@electrovoyage.'))
 
 RightclickMenu(logo_in_the_corner, logorightclickmenu)
