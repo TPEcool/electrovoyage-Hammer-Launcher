@@ -69,10 +69,10 @@ def upgradeMediaList(medialist: dict) -> dict:
         if int(version) < 3:
             medialist.setdefault('vproject')
             if medialist['vproject']:
-                ginfo = medialist['vproject']
+                contentpath = medialist['vproject']
             else:
                 ginfo = ask_for_gameinfo()
-            contentpath = os.path.dirname(ginfo)
+                contentpath = os.path.dirname(ginfo)
         match version:
             case '1':
                 newmedialist: dict[str, list[dict[str, str]]] = {}
