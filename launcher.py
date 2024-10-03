@@ -580,6 +580,7 @@ for group, programs in medialist.items():
 win.wm_protocol('WM_DELETE_WINDOW', onWindowClosed)
 
 os.environ['VPROJECT'] = sdkdata['vproject']
+os.environ['vproject'] = sdkdata['vproject']
 
 win.deiconify()
 win.focus()

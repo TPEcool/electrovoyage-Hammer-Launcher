@@ -120,7 +120,7 @@ class AssetPackEmulator:
         '''
         Return handle for file at path.
         '''
-        return open(path.join(self.basefolder, *filepath.split('/')), 'rb')
+        return open(path.join(self.basefolder, *path.relpath(filepath, 'resources').split('/')), 'rb')
     
 def AssetPackWrapper(pack: str, frozen: bool, resourcepath: str | None = None) -> AssetPack | AssetPackEmulator:
     '''
