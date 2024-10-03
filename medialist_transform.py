@@ -94,4 +94,5 @@ def upgradeMediaList(medialist: dict) -> dict:
             case '2':
                 newmedialist = medialist.copy()
                 newmedialist['vproject'] = contentpath
+                newmedialist['version'] = LATEST_SDK_VERSION
                 return newmedialist
