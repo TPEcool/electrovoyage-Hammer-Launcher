@@ -120,11 +120,13 @@ def makeversionstring() -> str:
         case 0:
             return (f'{VERSION} (failed to check for updates)', update_status)
         
+setcursor = lambda x: win.configure(cursor=x) if os.name == 'nt' else lambda x: x
+        
 def showversionstring() -> int:
-    win.configure(cursor='starting')
+    setcursor('starting')
     s, status = makeversionstring()
     statusstr.configure(text=f'Version {s}')
-    win.configure(cursor='arrow')
+    setcursor('arrow')
     return status
 
 PYINSTALLER = getattr(sys, 'frozen', False)
