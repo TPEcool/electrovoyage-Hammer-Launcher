@@ -139,9 +139,21 @@ def screw_up_words(s: str) -> str:
         shuffle(words)
     return ' '.join(words)
 
+def screw_up_letters(s: str) -> str:
+    '''
+    Randomize character order in string.
+    '''
+    chars = list(s)
+    for _ in range(5):
+        shuffle(chars)
+    return ''.join(chars)
+
 def aprilfools(s: str) -> str:
     if date.today().day == 1 and date.today().month == 4:
-        return screw_up_words(s)
+        if date.today().year % 4 == 0:
+            return screw_up_letters(s)
+        else:
+            return screw_up_words(s)
     return s
 
 if PYINSTALLER:
