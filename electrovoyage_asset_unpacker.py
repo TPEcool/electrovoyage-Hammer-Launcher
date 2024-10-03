@@ -129,10 +129,10 @@ def AssetPackWrapper(pack: str, frozen: bool, resourcepath: str | None = None) -
     `resourcepath` is an optional path to the `resources` folder. If not specified, assume the asset pack specified by `pack` is in the `resources` folder.
     '''
     if frozen:
+        return AssetPack(pack)
+    else:
         resourcepath_ = resourcepath if resourcepath is not None else path.dirname(pack)
         return AssetPackEmulator(resourcepath_)
-    else:
-        return AssetPack(pack)
     
 class StreamingAssetPack:
     '''
